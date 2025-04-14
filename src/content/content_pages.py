@@ -215,7 +215,7 @@ class HomePage(QWidget):
         # 账号状态卡片
         account_panel = QWidget()
         account_panel.setStyleSheet("""
-            background-color: white;
+            background-color: #f5f5f5;
             border-radius: 8px;
         """)
         account_layout = QVBoxLayout(account_panel)

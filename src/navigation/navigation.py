@@ -71,6 +71,7 @@ class NavigationSidebar(QWidget):
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 20px;
+            background-color: transparent;
         """)
         layout.addWidget(title)
 
