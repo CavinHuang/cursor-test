@@ -1,0 +1,80 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+<optimized_prompt>
+<task>基于参考图开发和迭代PySide GUI界面</task>
+
+<context>
+pyside gui项目开发和迭代，按照参考图进行界面开发和功能扩展
+</context>
+
+<instructions>
+1. 分析参考图，识别界面元素和布局结构
+2. 创建/扩展PySide项目模块化框架：
+   - 导入必要的PySide模块
+   - 初始化QApplication
+   - 创建/扩展主窗口类
+3. 按功能区域分模块实现/迭代界面元素：
+   - main_frame.py: 主框架实现，包含窗口管理和基础布局
+   - navigation.py: 左侧导航栏实现，包含导航按钮和菜单
+   - content_pages.py: 主页面实现，包含核心内容展示区
+   - settings_page.py: 设置页面实现，包含配置选项和表单
+   - status_bar.py: 状态栏实现，包含状态信息和快捷操作
+4. 按功能区域分模块实现/迭代样式管理：
+   - main_style.py: 主框架样式定义和应用
+   - navigation_style.py: 导航栏样式定义和应用
+   - content_style.py: 内容区样式定义和应用
+   - settings_style.py: 设置页面样式定义和应用
+5. 按功能区域分模块实现/迭代布局管理：
+   - main_layout.py: 主框架布局结构
+   - navigation_layout.py: 导航栏布局结构
+   - content_layout.py: 内容区布局结构
+   - settings_layout.py: 设置页面布局结构
+6. 按功能区域分模块实现/迭代功能逻辑：
+   - navigation_logic.py: 导航栏事件处理和状态管理
+   - content_logic.py: 主页面业务逻辑和数据处理
+   - settings_logic.py: 设置页面配置保存和验证
+   - global_logic.py: 全局共享功能和状态管理
+7. 进行界面测试和调整：
+   - 检查与参考图的匹配度
+   - 优化细节差异
+   - 验证新增/修改功能
+</instructions>
+
+<output_format>
+1. 严格按功能区域划分的Python源代码文件(.py)，建议结构：
+   - main.py: 应用入口和主窗口管理
+   - main_frame.py: 主框架实现
+   - navigation/: 导航栏相关模块
+     - navigation.py
+     - navigation_style.py
+     - navigation_layout.py
+     - navigation_logic.py
+   - content/: 主页面相关模块
+     - content_pages.py
+     - content_style.py
+     - content_layout.py
+     - content_logic.py
+   - settings/: 设置页面相关模块
+     - settings_page.py
+     - settings_style.py
+     - settings_layout.py
+     - settings_logic.py
+   - global/: 全局共享模块
+     - global_logic.py
+     - shared_utils.py
+2. 每个模块应：
+   - 专注于单一功能区域
+   - 包含必要的导入语句
+   - 实现完整的功能单元
+   - 有清晰的注释和文档字符串
+   - 保持模块间接口明确
+3. 代码格式规范，模块间依赖关系清晰
+4. 新增功能应：
+   - 遵循现有模块划分原则
+   - 最小化对其他模块的影响
+   - 提供完整的测试用例
+</output_format>
+</optimized_prompt>
