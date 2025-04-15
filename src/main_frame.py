@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QFontDatabase, QFont
 
 from src.logger import Logger
+from src.theme_manager import theme_manager
 
 
 class MainFrame(QMainWindow):
@@ -34,6 +35,9 @@ class MainFrame(QMainWindow):
         # 设置UI
         self._setup_ui()
 
+        # 连接主题变更信号
+        theme_manager.theme_changed.connect(self._on_theme_changed)
+
         self.logger.info("应用程序框架已初始化")
 
     def _setup_fonts(self):
@@ -49,7 +53,7 @@ class MainFrame(QMainWindow):
     def _setup_ui(self):
         """设置UI框架"""
         self.setWindowTitle("Cursor Pro Max")
-        self.setMinimumSize(1000, 700)
+        self.setMinimumSize(1000, 800)
 
         # 设置窗口图标（如果有的话）
         # self.setWindowIcon(QIcon("path/to/icon.png"))
@@ -59,112 +63,127 @@ class MainFrame(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         # 应用基础样式
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f5f5f5;
-            }
-            QLabel {
+        self._update_styles()
+
+    def _update_styles(self):
+        """更新样式"""
+        colors = theme_manager.get_theme_colors()
+
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background-color: {colors['bg_color']};
+            }}
+            QLabel {{
                 font-size: 13px;
-                color: #333333;
-            }
-            QPushButton {
+                color: {colors['text_color']};
+            }}
+            QPushButton {{
                 outline: none;
-            }
-            QProgressBar {
+            }}
+            QProgressBar {{
                 border: none;
-                background-color: #f0f0f0;
+                background-color: {colors['progress_bg']};
                 border-radius: 3px;
                 text-align: center;
-            }
-            QProgressBar::chunk {
-                background-color: #4CAF50;
+            }}
+            QProgressBar::chunk {{
+                background-color: {colors['progress_fg']};
                 border-radius: 3px;
-            }
-            QScrollBar:vertical {
+            }}
+            QScrollBar:vertical {{
                 border: none;
-                background: #f0f0f0;
+                background: {colors['border_color']};
                 width: 8px;
                 margin: 0px;
-            }
-            QScrollBar::handle:vertical {
-                background: #c0c0c0;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {theme_manager._darken_color(colors['border_color'], 0.2)};
                 min-height: 20px;
                 border-radius: 4px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
                 height: 0px;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
                 background: none;
-            }
-            QScrollBar:horizontal {
+            }}
+            QScrollBar:horizontal {{
                 border: none;
-                background: #f0f0f0;
+                background: {colors['border_color']};
                 height: 8px;
                 margin: 0px;
-            }
-            QScrollBar::handle:horizontal {
-                background: #c0c0c0;
+            }}
+            QScrollBar::handle:horizontal {{
+                background: {theme_manager._darken_color(colors['border_color'], 0.2)};
                 min-width: 20px;
                 border-radius: 4px;
-            }
-            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
                 width: 0px;
-            }
-            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+            }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
                 background: none;
-            }
-            QComboBox {
-                border: 1px solid #d0d0d0;
+            }}
+            QComboBox {{
+                border: 1px solid {colors['border_color']};
                 border-radius: 3px;
                 padding: 2px 5px;
-                background: white;
-            }
-            QComboBox::drop-down {
+                background: {colors['card_bg']};
+                color: {colors['text_color']};
+            }}
+            QComboBox::drop-down {{
                 width: 20px;
                 border: none;
-            }
-            QCheckBox {
+            }}
+            QCheckBox {{
                 spacing: 5px;
-            }
-            QCheckBox::indicator {
+                color: {colors['text_color']};
+            }}
+            QCheckBox::indicator {{
                 width: 16px;
                 height: 16px;
-            }
-            QTextEdit {
-                border: 1px solid #d0d0d0;
+            }}
+            QTextEdit {{
+                border: 1px solid {colors['border_color']};
                 border-radius: 3px;
-            }
-            QToolTip {
-                background-color: #f5f5f5;
-                color: #333333;
-                border: 1px solid #d0d0d0;
+                color: {colors['text_color']};
+                background-color: {colors['card_bg']};
+            }}
+            QToolTip {{
+                background-color: {colors['card_bg']};
+                color: {colors['text_color']};
+                border: 1px solid {colors['border_color']};
                 border-radius: 3px;
                 padding: 2px;
-            }
+            }}
             /* 标题栏样式 */
-            QMenuBar {
-                background-color: #4CAF50;
+            QMenuBar {{
+                background-color: {colors['accent_color']};
                 color: white;
                 padding: 2px;
-            }
-            QMenuBar::item {
+            }}
+            QMenuBar::item {{
                 background-color: transparent;
                 padding: 4px 8px;
                 border-radius: 3px;
-            }
-            QMenuBar::item:selected {
+            }}
+            QMenuBar::item:selected {{
                 background-color: rgba(255, 255, 255, 0.2);
-            }
-            QMenuBar::item:pressed {
+            }}
+            QMenuBar::item:pressed {{
                 background-color: rgba(255, 255, 255, 0.3);
-            }
-            QStatusBar {
-                background-color: #f0f0f0;
-                color: #333333;
-                border-top: 1px solid #d0d0d0;
-            }
+            }}
+            QStatusBar {{
+                background-color: {colors['border_color']};
+                color: {colors['text_color']};
+                border-top: 1px solid {colors['border_color']};
+            }}
         """)
+
+    def _on_theme_changed(self, theme_name):
+        """主题变更处理函数"""
+        self.logger.info(f"应用{theme_name}主题")
+        self._update_styles()
 
     def set_central_layout(self, layout):
         """设置中央布局"""

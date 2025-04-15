@@ -14,6 +14,7 @@ from PySide6.QtGui import QFont, QColor
 
 from src.logger import Logger
 from src.log_widget import LogWidget
+from src.theme_manager import theme_manager
 
 
 class RoundedButton(QPushButton):
@@ -21,13 +22,13 @@ class RoundedButton(QPushButton):
 
     def __init__(self, text, color="#6200ee", parent=None):
         super().__init__(text, parent)
-        self.setFixedHeight(36)
+        self.setFixedHeight(44)
         self.setMinimumWidth(100)
         self.setStyleSheet(f"""
             QPushButton {{
                 background-color: {color};
                 border: none;
-                border-radius: 18px;
+                border-radius: 10px;
                 color: white;
                 padding: 8px 16px;
                 font-size: 13px;
@@ -106,21 +107,34 @@ class HomePage(QWidget):
         super().__init__(parent)
         self.logger = logger
 
+        # 初始化UI
         self._setup_ui()
+
+        # 连接主题切换信号
+        theme_manager.theme_changed.connect(self._on_theme_changed)
 
     def _setup_ui(self):
         """设置UI"""
         # 整体布局
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)  # 更加紧凑的边距
-        main_layout.setSpacing(8)  # 调整垂直间距
+        main_layout.setContentsMargins(12, 12, 12, 12)
+        main_layout.setSpacing(8)
 
-        # 顶部描述区域 - 灰色背景区域
+        # 获取当前主题颜色
+        colors = theme_manager.get_theme_colors()
+
+        # 设置主页面背景色
+        self.setStyleSheet(f"background-color: {colors['bg_color']};")
+
+        # 顶部描述区域
         description_widget = QWidget()
-        description_widget.setStyleSheet("background-color: #f2f2f2; border-radius: 4px;")
+        description_widget.setStyleSheet(f"""
+            background-color: {colors['section_bg']};
+            border-radius: 4px;
+        """)
         description_layout = QVBoxLayout(description_widget)
-        description_layout.setContentsMargins(12, 10, 12, 10)
-        description_layout.setSpacing(4)  # 两行之间的间距
+        description_layout.setContentsMargins(12, 12, 12, 12)
+        description_layout.setSpacing(8)  # 两行之间的间距
 
         # 第一行描述
         bullet_point1 = QLabel("•")
@@ -130,7 +144,7 @@ class HomePage(QWidget):
 
         bullet_layout1 = QHBoxLayout()
         bullet_layout1.setContentsMargins(0, 0, 0, 0)
-        bullet_layout1.setSpacing(4)  # 项目符号和文本之间的间距
+        bullet_layout1.setSpacing(6)  # 项目符号和文本之间的间距
         bullet_layout1.addWidget(bullet_point1)
         bullet_layout1.addWidget(desc1)
         bullet_layout1.addStretch()
@@ -143,7 +157,7 @@ class HomePage(QWidget):
 
         bullet_layout2 = QHBoxLayout()
         bullet_layout2.setContentsMargins(0, 0, 0, 0)
-        bullet_layout2.setSpacing(4)  # 项目符号和文本之间的间距
+        bullet_layout2.setSpacing(6)  # 项目符号和文本之间的间距
         bullet_layout2.addWidget(bullet_point2)
         bullet_layout2.addWidget(desc2)
         bullet_layout2.addStretch()
@@ -154,17 +168,17 @@ class HomePage(QWidget):
 
         # 顶部信息区域 - 两个卡片
         top_layout = QHBoxLayout()
-        top_layout.setSpacing(10)  # 两个卡片之间的间距
+        top_layout.setSpacing(12)  # 两个卡片之间的间距
 
         # 系统信息卡片
         sys_info_panel = QWidget()
-        sys_info_panel.setStyleSheet("""
-            background-color: white;
+        sys_info_panel.setStyleSheet(f"""
+            background-color: {colors['card_bg']};
             border-radius: 4px;
         """)
         sys_info_layout = QVBoxLayout(sys_info_panel)
         sys_info_layout.setContentsMargins(12, 12, 12, 12)
-        sys_info_layout.setSpacing(6)  # 紧凑的行间距
+        sys_info_layout.setSpacing(12)  # 紧凑的行间距
 
         # 标题和刷新按钮并排
         sys_header_layout = QHBoxLayout()
@@ -183,6 +197,7 @@ class HomePage(QWidget):
                 border-radius: 2px;
                 padding: 2px;
                 font-size: 12px;
+                color: #333;
             }
             QPushButton:hover {
                 background-color: #e0e0e0;
@@ -214,21 +229,23 @@ class HomePage(QWidget):
 
         # 账号状态卡片
         account_panel = QWidget()
-        account_panel.setStyleSheet("""
-            background-color: #f5f5f5;
+        account_panel.setObjectName("account_panel")
+        account_panel.setStyleSheet(f"""
+            background-color: {colors['card_bg']};
             border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         """)
         account_layout = QVBoxLayout(account_panel)
-        account_layout.setContentsMargins(15, 15, 15, 15)
-        account_layout.setSpacing(8)  # 增加间距使布局更宽松
+        account_layout.setContentsMargins(20, 20, 20, 20)
+        account_layout.setSpacing(12)  # 增加间距使布局更宽松
 
         # 标题和刷新按钮并排
         account_header_layout = QHBoxLayout()
-        account_header_layout.setContentsMargins(0, 0, 0, 0)
+        account_header_layout.setContentsMargins(0, 0, 0, 5)
         account_header_layout.setSpacing(0)
 
         account_title = QLabel("本地账号状态")
-        account_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        account_title.setStyleSheet("font-weight: bold; font-size: 14px;")
 
         refresh_account_btn = QPushButton("刷新")
         refresh_account_btn.setFixedSize(50, 24)
@@ -239,6 +256,7 @@ class HomePage(QWidget):
                 border-radius: 2px;
                 padding: 2px;
                 font-size: 12px;
+                color: #333;
             }
             QPushButton:hover {
                 background-color: #e0e0e0;
@@ -261,34 +279,44 @@ class HomePage(QWidget):
         usage_label = QLabel("使用量: 26/150")
 
         # 设置统一字体大小和样式，图片中的字体大小一致
-        for label in [account_status, member_type, remain_days, usage_label]:
-            label.setStyleSheet("font-size: 13px; margin-top: 2px;")
+        account_status.setStyleSheet("font-size: 14px; margin-top: 4px;")
+        member_type.setStyleSheet("font-size: 14px; margin-top: 4px;")
+        remain_days.setStyleSheet("font-size: 14px; margin-top: 4px;")
+        usage_label.setStyleSheet("font-size: 14px;")
 
         account_layout.addWidget(account_status)
         account_layout.addWidget(member_type)
         account_layout.addWidget(remain_days)
-        account_layout.addWidget(usage_label)
+
+        # 为使用量和进度条创建更清晰的结构
+        usage_section = QWidget()
+        usage_layout = QVBoxLayout(usage_section)
+        usage_layout.setContentsMargins(0, 8, 0, 5)  # 添加上下间距
+        usage_layout.setSpacing(8)  # 组件之间的间距
+
+        usage_layout.addWidget(usage_label)
 
         # 进度条 - 匹配图片样式
         self.usage_bar = QProgressBar()
         self.usage_bar.setRange(0, 150)
         self.usage_bar.setValue(26)
-        self.usage_bar.setFixedHeight(5)  # 扁平进度条
+        self.usage_bar.setFixedHeight(8)  # 增加高度确保可见
         self.usage_bar.setTextVisible(False)
-        self.usage_bar.setStyleSheet("""
-            QProgressBar {
+        self.usage_bar.setStyleSheet(f"""
+            QProgressBar {{
                 border: none;
-                background-color: #E8E8E8;
-                border-radius: 2px;
-                margin-top: 5px;
-            }
-            QProgressBar::chunk {
-                background-color: #4CAF50;
-                border-radius: 2px;
-            }
+                background-color: #f0f0f0;
+                border-radius: 4px;
+                min-height: 8px;
+            }}
+            QProgressBar::chunk {{
+                background-color: #4c6cf5;
+                border-radius: 4px;
+            }}
         """)
-        account_layout.addWidget(self.usage_bar)
-        account_layout.addStretch()  # 确保内容顶部对齐
+
+        account_layout.addWidget(usage_section)
+        account_layout.addStretch(1)  # 在底部添加伸展空间
 
         # 添加到顶部布局
         top_layout.addWidget(sys_info_panel, 1)  # 1:1比例
@@ -298,7 +326,7 @@ class HomePage(QWidget):
 
         # 操作按钮区域 - 五个彩色按钮
         buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(0, 0, 0, 0)
+        buttons_layout.setContentsMargins(0, 10, 0, 10)
         buttons_layout.setSpacing(8)  # 按钮之间的间距
 
         # 更精确匹配参考图的按钮颜色和尺寸
@@ -310,7 +338,7 @@ class HomePage(QWidget):
 
         # 自定义每个按钮的样式
         for btn in [btn_register, btn_reset, btn_register_reset, btn_switch, btn_close]:
-            btn.setFixedHeight(36)  # 固定高度
+            btn.setFixedHeight(44)  # 固定高度
 
         btn_register.clicked.connect(lambda: self._on_button_clicked("仅注册账号"))
         btn_reset.clicked.connect(lambda: self._on_button_clicked("仅重置机器"))
@@ -328,8 +356,8 @@ class HomePage(QWidget):
 
         # 日志区域
         logs_panel = QWidget()
-        logs_panel.setStyleSheet("""
-            background-color: white;
+        logs_panel.setStyleSheet(f"""
+            background-color: {colors['card_bg']};
             border-radius: 4px;
         """)
         logs_layout = QVBoxLayout(logs_panel)
@@ -338,7 +366,7 @@ class HomePage(QWidget):
 
         # 日志标题栏
         log_header = QHBoxLayout()
-        log_header.setContentsMargins(0, 0, 0, 2)
+        log_header.setContentsMargins(0, 0, 0, 6)
         log_header.setSpacing(10)
 
         log_title = QLabel("日志输出")
@@ -350,39 +378,41 @@ class HomePage(QWidget):
         # 清空和打开按钮
         btn_clear = QPushButton("清空显示区域")
         btn_clear.setFixedSize(100, 26)
-        btn_clear.setStyleSheet("""
-            QPushButton {
+        btn_clear.setStyleSheet(f"""
+            QPushButton {{
                 background-color: #f0f0f0;
+                color: {colors['text_color']};
                 border: none;
                 border-radius: 3px;
                 padding: 3px;
                 font-size: 12px;
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 background-color: #e0e0e0;
-            }
-            QPushButton:pressed {
+            }}
+            QPushButton:pressed {{
                 background-color: #d0d0d0;
-            }
+            }}
         """)
         btn_clear.clicked.connect(self._on_clear_logs)
 
         btn_open_file = QPushButton("打开日志文件")
         btn_open_file.setFixedSize(100, 26)
-        btn_open_file.setStyleSheet("""
-            QPushButton {
+        btn_open_file.setStyleSheet(f"""
+            QPushButton {{
                 background-color: #f0f0f0;
+                color: {colors['text_color']};
                 border: none;
                 border-radius: 3px;
                 padding: 3px;
                 font-size: 12px;
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 background-color: #e0e0e0;
-            }
-            QPushButton:pressed {
+            }}
+            QPushButton:pressed {{
                 background-color: #d0d0d0;
-            }
+            }}
         """)
         btn_open_file.clicked.connect(self._on_open_log_file)
 
@@ -391,30 +421,20 @@ class HomePage(QWidget):
 
         logs_layout.addLayout(log_header)
 
-        # 分隔线
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        line.setStyleSheet("background-color: #ddd; margin: 3px 0;")
-        logs_layout.addWidget(line)
-
-        # 执行结果文本区域
-        result_header = QLabel("=== 执行结果 ===")
-        result_header.setStyleSheet("font-size: 13px; font-weight: bold; margin-top: 2px;")
-        logs_layout.addWidget(result_header)
-
         # 精确匹配参考图的日志文本
         sample_text = QTextEdit()
         sample_text.setReadOnly(True)
-        sample_text.setStyleSheet("""
-            QTextEdit {
+        sample_text.setContentsMargins(0, 6, 0, 6)
+        sample_text.setStyleSheet(f"""
+            QTextEdit {{
                 border: none;
-                background-color: #f9f9f9;
+                background-color: {colors['section_bg'] if colors['bg_color'] == '#f5f5f5' else '#252525'};
+                color: {colors['text_color']};
                 font-family: Consolas, monospace;
                 font-size: 12px;
                 line-height: 1.3;
                 padding: 5px;
-            }
+            }}
         """)
 
         # 精确匹配参考图中的文本内容
@@ -442,6 +462,104 @@ class HomePage(QWidget):
         logs_layout.addWidget(sample_text, 1)  # 让日志文本区域可扩展
 
         main_layout.addWidget(logs_panel, 1)  # 让日志区域可扩展
+
+    def _on_theme_changed(self, theme_name):
+        """主题变更处理函数"""
+        self.logger.info(f"切换到{theme_name}主题")
+
+        # 获取新主题的颜色
+        colors = theme_manager.get_theme_colors()
+
+        # 更新主页面背景色
+        self.setStyleSheet(f"background-color: {colors['bg_color']};")
+
+        # 更新描述区域
+        for widget in self.findChildren(QWidget):
+            if hasattr(widget, 'objectName') and widget.objectName() == "description_widget":
+                widget.setStyleSheet(f"""
+                    background-color: {colors['section_bg']};
+                    border-radius: 4px;
+                    border: 1px solid {colors['border_color']};
+                """)
+            elif hasattr(widget, 'objectName') and widget.objectName() == "sys_info_panel":
+                widget.setStyleSheet(f"""
+                    background-color: {colors['card_bg']};
+                    border-radius: 4px;
+                    border: 1px solid {colors['border_color']};
+                """)
+            elif hasattr(widget, 'objectName') and widget.objectName() == "account_panel":
+                widget.setStyleSheet(f"""
+                    background-color: {colors['card_bg']};
+                    border-radius: 8px;
+                    border: 1px solid {colors['border_color']};
+                """)
+            elif hasattr(widget, 'objectName') and widget.objectName() == "logs_panel":
+                widget.setStyleSheet(f"""
+                    background-color: {colors['card_bg']};
+                    border-radius: 4px;
+                    border: 1px solid {colors['border_color']};
+                """)
+
+        # 更新文本颜色
+        for label in self.findChildren(QLabel):
+            if label.text() == "•":
+                label.setStyleSheet(f"font-size: 14px; color: {colors['text_color']}; font-weight: bold;")
+            elif not hasattr(label, 'objectName') or not label.objectName().startswith("title_"):
+                label.setStyleSheet(f"color: {colors['text_color']}; font-size: 13px;")
+
+        # 更新按钮样式
+        for btn in self.findChildren(QPushButton):
+            if not isinstance(btn, RoundedButton) and not hasattr(btn, 'objectName') or (hasattr(btn, 'objectName') and btn.objectName().startswith("btn_")):
+                button_bg = "#f0f0f0" if theme_name == "light" else "#383838"
+                hover_bg = "#e0e0e0" if theme_name == "light" else "#444444"
+                pressed_bg = "#d0d0d0" if theme_name == "light" else "#555555"
+
+                btn.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {button_bg};
+                        color: {colors['text_color']};
+                        border: none;
+                        border-radius: 3px;
+                        padding: 3px;
+                        font-size: 12px;
+                    }}
+                    QPushButton:hover {{
+                        background-color: {hover_bg};
+                    }}
+                    QPushButton:pressed {{
+                        background-color: {pressed_bg};
+                    }}
+                """)
+
+        # 更新进度条颜色
+        if hasattr(self, 'usage_bar'):
+            self.usage_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: none;
+                    background-color: {colors['progress_bg']};
+                    border-radius: 3px;
+                    min-height: 6px;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {colors['progress_fg']};
+                    border-radius: 3px;
+                }}
+            """)
+
+        # 更新文本编辑区域
+        for text_edit in self.findChildren(QTextEdit):
+            dark_log_bg = colors.get('dark_log_bg', '#1a1a1a') if theme_name == 'dark' else colors['section_bg']
+            text_edit.setStyleSheet(f"""
+                QTextEdit {{
+                    border: none;
+                    background-color: {dark_log_bg};
+                    color: {colors['text_color']};
+                    font-family: Consolas, monospace;
+                    font-size: 12px;
+                    line-height: 1.3;
+                    padding: 5px;
+                }}
+            """)
 
     def _on_button_clicked(self, button_name):
         """处理按钮点击事件"""
