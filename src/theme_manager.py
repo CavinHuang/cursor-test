@@ -30,6 +30,10 @@ class ThemeManager(QObject):
             "nav_text": "#333333",
             "nav_selected_bg": "#4CAF50",
             "nav_selected_text": "#ffffff",
+            "refresh_btn_bg": "#f0f0f0",
+            "refresh_btn_hover": "#e0e0e0",
+            "refresh_btn_pressed": "#d0d0d0",
+            "refresh_btn_text": "#333",
         },
         "dark": {
             "bg_color": "#1e1e1e",
@@ -48,6 +52,10 @@ class ThemeManager(QObject):
             "dark_log_bg": "#1a1a1a",   # 日志背景更暗
             "dark_text": "#bbbbbb",     # 次要文本颜色
             "dark_border": "#333333",   # 深色边框
+            "refresh_btn_bg": "#1a1a1a",
+            "refresh_btn_hover": "#252525",
+            "refresh_btn_pressed": "#383838",
+            "refresh_btn_text": "#e0e0e0",
         }
     }
 

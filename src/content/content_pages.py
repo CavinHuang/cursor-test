@@ -24,23 +24,52 @@ class RoundedButton(QPushButton):
         super().__init__(text, parent)
         self.setFixedHeight(44)
         self.setMinimumWidth(100)
+        self.color = color
+        self._update_style()
+
+        # 连接主题变更信号
+        theme_manager.theme_changed.connect(self._on_theme_changed)
+
+    def _update_style(self):
+        """更新按钮样式"""
+        # 暗黑模式下按钮稍微调暗一些，使其颜色不那么刺眼
+        current_color = self.color
+        if theme_manager.current_theme == "dark":
+            # 使颜色暗一些但保持色调
+            current_color = self._adjust_color_for_dark(self.color)
+
         self.setStyleSheet(f"""
             QPushButton {{
-                background-color: {color};
+                background-color: {current_color};
                 border: none;
-                border-radius: 10px;
+                border-radius: 22px;
                 color: white;
                 padding: 8px 16px;
                 font-size: 13px;
                 font-weight: 500;
             }}
             QPushButton:hover {{
-                background-color: {self._lighten_color(color, 0.1)};
+                background-color: {self._lighten_color(current_color, 0.1)};
             }}
             QPushButton:pressed {{
-                background-color: {self._darken_color(color, 0.1)};
+                background-color: {self._darken_color(current_color, 0.1)};
             }}
         """)
+
+    def _on_theme_changed(self, theme_name):
+        """主题变更时更新样式"""
+        self._update_style()
+
+    def _adjust_color_for_dark(self, color, factor=0.8):
+        """调整颜色适应暗黑模式"""
+        if color.startswith('#'):
+            color = color[1:]
+        r, g, b = int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+        # 降低亮度但保持色调
+        r = int(r * factor)
+        g = int(g * factor)
+        b = int(b * factor)
+        return f"#{r:02x}{g:02x}{b:02x}"
 
     def _lighten_color(self, color, factor=0.1):
         """使颜色变亮"""
@@ -128,9 +157,11 @@ class HomePage(QWidget):
 
         # 顶部描述区域
         description_widget = QWidget()
+        description_widget.setObjectName("description_widget")
         description_widget.setStyleSheet(f"""
             background-color: {colors['section_bg']};
             border-radius: 4px;
+            border: none;
         """)
         description_layout = QVBoxLayout(description_widget)
         description_layout.setContentsMargins(12, 12, 12, 12)
@@ -139,8 +170,8 @@ class HomePage(QWidget):
         # 第一行描述
         bullet_point1 = QLabel("•")
         desc1 = QLabel("「Cursor Pro Max」是一个完全免费的工具，仅供个人学习和研究使用")
-        bullet_point1.setStyleSheet("font-size: 14px; color: #333; font-weight: bold;")
-        desc1.setStyleSheet("font-size: 13px; color: #333;")
+        bullet_point1.setStyleSheet(f"font-size: 14px; color: {colors['text_color']}; font-weight: bold; border: none;")
+        desc1.setStyleSheet(f"font-size: 13px; color: {colors['text_color']}; border: none;")
 
         bullet_layout1 = QHBoxLayout()
         bullet_layout1.setContentsMargins(0, 0, 0, 0)
@@ -152,8 +183,8 @@ class HomePage(QWidget):
         # 第二行描述
         bullet_point2 = QLabel("•")
         desc2 = QLabel("更多资源请关注微信公众号")
-        bullet_point2.setStyleSheet("font-size: 14px; color: #333; font-weight: bold;")
-        desc2.setStyleSheet("font-size: 13px; color: #333;")
+        bullet_point2.setStyleSheet(f"font-size: 14px; color: {colors['text_color']}; font-weight: bold;border: none;")
+        desc2.setStyleSheet(f"font-size: 13px; color: {colors['text_color']}; border: none;")
 
         bullet_layout2 = QHBoxLayout()
         bullet_layout2.setContentsMargins(0, 0, 0, 0)
@@ -172,9 +203,11 @@ class HomePage(QWidget):
 
         # 系统信息卡片
         sys_info_panel = QWidget()
+        sys_info_panel.setObjectName("sys_info_panel")
         sys_info_panel.setStyleSheet(f"""
             background-color: {colors['card_bg']};
             border-radius: 4px;
+            border: none;
         """)
         sys_info_layout = QVBoxLayout(sys_info_panel)
         sys_info_layout.setContentsMargins(12, 12, 12, 12)
@@ -186,25 +219,26 @@ class HomePage(QWidget):
         sys_header_layout.setSpacing(0)
 
         sys_title = QLabel("系统信息")
-        sys_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        sys_title.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {colors['text_color']};")
 
         refresh_sys_btn = QPushButton("刷新")
         refresh_sys_btn.setFixedSize(50, 24)
-        refresh_sys_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f0f0f0;
+
+        refresh_sys_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {colors['refresh_btn_bg']};
                 border: none;
                 border-radius: 2px;
                 padding: 2px;
                 font-size: 12px;
-                color: #333;
-            }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-            }
-            QPushButton:pressed {
-                background-color: #d0d0d0;
-            }
+                color: {colors['refresh_btn_text']};
+            }}
+            QPushButton:hover {{
+                background-color: {colors['refresh_btn_hover']};
+            }}
+            QPushButton:pressed {{
+                background-color: {colors['refresh_btn_pressed']};
+            }}
         """)
         refresh_sys_btn.clicked.connect(lambda: self.logger.info("刷新系统信息"))
 
@@ -218,9 +252,9 @@ class HomePage(QWidget):
         cursor_version = QLabel("Cursor版本: 0.48.7")
         os_version = QLabel("操作系统: Windows 10")
 
-        chrome_version.setStyleSheet("font-size: 13px;")
-        cursor_version.setStyleSheet("font-size: 13px;")
-        os_version.setStyleSheet("font-size: 13px;")
+        chrome_version.setStyleSheet(f"font-size: 13px; color: {colors['text_color']}; border: none;")
+        cursor_version.setStyleSheet(f"font-size: 13px; color: {colors['text_color']}; border: none;")
+        os_version.setStyleSheet(f"font-size: 13px; color: {colors['text_color']}; border: none;")
 
         sys_info_layout.addWidget(chrome_version)
         sys_info_layout.addWidget(cursor_version)
@@ -249,21 +283,22 @@ class HomePage(QWidget):
 
         refresh_account_btn = QPushButton("刷新")
         refresh_account_btn.setFixedSize(50, 24)
-        refresh_account_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f0f0f0;
+
+        refresh_account_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {colors['refresh_btn_bg']};
                 border: none;
                 border-radius: 2px;
                 padding: 2px;
                 font-size: 12px;
-                color: #333;
-            }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-            }
-            QPushButton:pressed {
-                background-color: #d0d0d0;
-            }
+                color: {colors['text_color']};
+            }}
+            QPushButton:hover {{
+                background-color: {colors['refresh_btn_hover']};
+            }}
+            QPushButton:pressed {{
+                background-color: {colors['refresh_btn_pressed']};
+            }}
         """)
         refresh_account_btn.clicked.connect(lambda: self.logger.info("刷新账号状态"))
 
@@ -356,9 +391,11 @@ class HomePage(QWidget):
 
         # 日志区域
         logs_panel = QWidget()
+        logs_panel.setObjectName("logs_panel")
         logs_panel.setStyleSheet(f"""
             background-color: {colors['card_bg']};
             border-radius: 4px;
+            border: 1px solid {colors['border_color']};
         """)
         logs_layout = QVBoxLayout(logs_panel)
         logs_layout.setContentsMargins(12, 12, 12, 12)
@@ -370,7 +407,7 @@ class HomePage(QWidget):
         log_header.setSpacing(10)
 
         log_title = QLabel("日志输出")
-        log_title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        log_title.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {colors['text_color']}; border: none;")
 
         log_header.addWidget(log_title)
         log_header.addStretch(1)
@@ -380,18 +417,18 @@ class HomePage(QWidget):
         btn_clear.setFixedSize(100, 26)
         btn_clear.setStyleSheet(f"""
             QPushButton {{
-                background-color: #f0f0f0;
-                color: {colors['text_color']};
+                background-color: {colors['refresh_btn_bg']};
+                color: {colors['refresh_btn_text']};
                 border: none;
                 border-radius: 3px;
                 padding: 3px;
                 font-size: 12px;
             }}
             QPushButton:hover {{
-                background-color: #e0e0e0;
+                background-color: {colors['refresh_btn_hover']};
             }}
             QPushButton:pressed {{
-                background-color: #d0d0d0;
+                background-color: {colors['refresh_btn_pressed']};
             }}
         """)
         btn_clear.clicked.connect(self._on_clear_logs)
@@ -400,7 +437,7 @@ class HomePage(QWidget):
         btn_open_file.setFixedSize(100, 26)
         btn_open_file.setStyleSheet(f"""
             QPushButton {{
-                background-color: #f0f0f0;
+                background-color: {colors['refresh_btn_bg']};
                 color: {colors['text_color']};
                 border: none;
                 border-radius: 3px;
@@ -408,10 +445,10 @@ class HomePage(QWidget):
                 font-size: 12px;
             }}
             QPushButton:hover {{
-                background-color: #e0e0e0;
+                background-color: {colors['refresh_btn_hover']};
             }}
             QPushButton:pressed {{
-                background-color: #d0d0d0;
+                background-color: {colors['refresh_btn_pressed']};
             }}
         """)
         btn_open_file.clicked.connect(self._on_open_log_file)
@@ -425,10 +462,11 @@ class HomePage(QWidget):
         sample_text = QTextEdit()
         sample_text.setReadOnly(True)
         sample_text.setContentsMargins(0, 6, 0, 6)
+        dark_log_bg = colors.get('dark_log_bg', '#1a1a1a') if theme_manager.current_theme == 'dark' else colors['section_bg']
         sample_text.setStyleSheet(f"""
             QTextEdit {{
                 border: none;
-                background-color: {colors['section_bg'] if colors['bg_color'] == '#f5f5f5' else '#252525'};
+                background-color: {dark_log_bg};
                 color: {colors['text_color']};
                 font-family: Consolas, monospace;
                 font-size: 12px;
@@ -479,25 +517,25 @@ class HomePage(QWidget):
                 widget.setStyleSheet(f"""
                     background-color: {colors['section_bg']};
                     border-radius: 4px;
-                    border: 1px solid {colors['border_color']};
+                    border: none;
                 """)
             elif hasattr(widget, 'objectName') and widget.objectName() == "sys_info_panel":
                 widget.setStyleSheet(f"""
                     background-color: {colors['card_bg']};
                     border-radius: 4px;
-                    border: 1px solid {colors['border_color']};
+                    border: none;
                 """)
             elif hasattr(widget, 'objectName') and widget.objectName() == "account_panel":
                 widget.setStyleSheet(f"""
                     background-color: {colors['card_bg']};
                     border-radius: 8px;
-                    border: 1px solid {colors['border_color']};
+                    border: none;
                 """)
             elif hasattr(widget, 'objectName') and widget.objectName() == "logs_panel":
                 widget.setStyleSheet(f"""
                     background-color: {colors['card_bg']};
                     border-radius: 4px;
-                    border: 1px solid {colors['border_color']};
+                    border: none;
                 """)
 
         # 更新文本颜色
@@ -510,13 +548,10 @@ class HomePage(QWidget):
         # 更新按钮样式
         for btn in self.findChildren(QPushButton):
             if not isinstance(btn, RoundedButton) and not hasattr(btn, 'objectName') or (hasattr(btn, 'objectName') and btn.objectName().startswith("btn_")):
-                button_bg = "#f0f0f0" if theme_name == "light" else "#383838"
-                hover_bg = "#e0e0e0" if theme_name == "light" else "#444444"
-                pressed_bg = "#d0d0d0" if theme_name == "light" else "#555555"
 
                 btn.setStyleSheet(f"""
                     QPushButton {{
-                        background-color: {button_bg};
+                        background-color: {colors['refresh_btn_bg']};
                         color: {colors['text_color']};
                         border: none;
                         border-radius: 3px;
@@ -524,10 +559,10 @@ class HomePage(QWidget):
                         font-size: 12px;
                     }}
                     QPushButton:hover {{
-                        background-color: {hover_bg};
+                        background-color: {colors['refresh_btn_hover']};
                     }}
                     QPushButton:pressed {{
-                        background-color: {pressed_bg};
+                        background-color: {colors['refresh_btn_pressed']};
                     }}
                 """)
 

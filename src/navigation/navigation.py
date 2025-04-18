@@ -31,7 +31,7 @@ class SidebarButton(QPushButton):
             QPushButton {{
                 background-color: transparent;
                 border: none;
-                border-radius: 0px;
+                border-radius: 8px;
                 color: {colors['nav_text']};
                 text-align: left;
                 padding-left: 15px;
@@ -47,7 +47,6 @@ class SidebarButton(QPushButton):
                 background-color: {colors['nav_selected_bg']};
                 color: {colors['nav_selected_text']};
                 font-weight: bold;
-                border-radius: 0px;
             }}
         """)
 
@@ -98,7 +97,7 @@ class NavigationSidebar(QWidget):
 
         main_container = QWidget(self)
         main_container.setGeometry(0, 0, 200, 9999)  # 设置足够大的高度
-        main_container.setStyleSheet(f"background-color: {colors['nav_bg']};")
+        main_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 20, 10, 20)
@@ -120,7 +119,7 @@ class NavigationSidebar(QWidget):
         # 导航按钮区域 - 包装在单独的容器中以更好地控制间距
         nav_container = QWidget()
         nav_container.setObjectName("nav_container")
-        nav_container.setStyleSheet(f"background-color: {colors['nav_bg']};")
+        nav_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
         nav_layout = QVBoxLayout(nav_container)
         nav_layout.setContentsMargins(0, 0, 0, 0)
         nav_layout.setSpacing(0)  # 按钮之间无间距
