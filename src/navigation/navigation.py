@@ -27,6 +27,16 @@ class SidebarButton(QPushButton):
     def _update_style(self):
         """更新按钮样式"""
         colors = theme_manager.get_theme_colors()
+        current_theme = theme_manager.current_theme
+
+        # 根据主题设置不同的hover和pressed样式
+        if current_theme == "dark":
+            hover_bg = "rgba(255, 255, 255, 0.1)"  # 深色主题下使用亮色背景
+            pressed_bg = "rgba(255, 255, 255, 0.15)"  # 深色主题下使用更亮的背景
+        else:
+            hover_bg = "rgba(0, 0, 0, 0.05)"  # 浅色主题下使用原有的样式
+            pressed_bg = "rgba(0, 0, 0, 0.1)"  # 浅色主题下使用原有的样式
+
         self.setStyleSheet(f"""
             QPushButton {{
                 background-color: transparent;
@@ -38,10 +48,10 @@ class SidebarButton(QPushButton):
                 font-size: 14px;
             }}
             QPushButton:hover {{
-                background-color: rgba(0, 0, 0, 0.05);
+                background-color: {hover_bg};
             }}
             QPushButton:pressed {{
-                background-color: rgba(0, 0, 0, 0.1);
+                background-color: {pressed_bg};
             }}
             QPushButton:checked {{
                 background-color: {colors['nav_selected_bg']};
@@ -83,12 +93,50 @@ class NavigationSidebar(QWidget):
         """主题变更处理函数"""
         self._update_styles()
 
-        # 更新主题切换按钮文本
+        # 更新主题切换按钮文本和样式
         if hasattr(self, 'theme_switcher'):
+            colors = theme_manager.get_theme_colors()
+
             if theme_name == "light":
                 self.theme_switcher.setText("切换到深色主题")
+                # 浅色主题下的样式
+                self.theme_switcher.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {colors['accent_color']};
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 5px;
+                        font-size: 12px;
+                        text-align: center;
+                    }}
+                    QPushButton:hover {{
+                        background-color: {self._lighten_color(colors['accent_color'])};
+                    }}
+                    QPushButton:pressed {{
+                        background-color: {self._darken_color(colors['accent_color'])};
+                    }}
+                """)
             else:
                 self.theme_switcher.setText("切换到浅色主题")
+                # 深色主题下的样式
+                self.theme_switcher.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {colors['accent_color']};
+                        color: #ffffff; /* 确保文本在深色主题下清晰可见 */
+                        border: none;
+                        border-radius: 8px;
+                        padding: 5px;
+                        font-size: 12px;
+                        text-align: center;
+                    }}
+                    QPushButton:hover {{
+                        background-color: {self._lighten_color(colors['accent_color'], 0.15)}; /* 增加亮度因子 */
+                    }}
+                    QPushButton:pressed {{
+                        background-color: {self._lighten_color(colors['accent_color'], 0.05)};
+                    }}
+                """)
 
     def _setup_ui(self):
         """设置UI界面"""
@@ -97,7 +145,12 @@ class NavigationSidebar(QWidget):
 
         main_container = QWidget(self)
         main_container.setGeometry(0, 0, 200, 9999)  # 设置足够大的高度
-        main_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
+
+        # 根据主题设置不同的容器样式
+        if theme_manager.current_theme == "dark":
+            main_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
+        else:
+            main_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 20, 10, 20)
@@ -105,7 +158,7 @@ class NavigationSidebar(QWidget):
 
         # 标题
         title = QLabel("CursorProMax")
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet(f"""
             color: {colors['accent_color']};
             font-size: 18px;
@@ -119,7 +172,11 @@ class NavigationSidebar(QWidget):
         # 导航按钮区域 - 包装在单独的容器中以更好地控制间距
         nav_container = QWidget()
         nav_container.setObjectName("nav_container")
-        nav_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
+        # 根据主题设置导航容器样式
+        if theme_manager.current_theme == "dark":
+            nav_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
+        else:
+            nav_container.setStyleSheet(f"background-color: {colors['nav_bg']};border: none;")
         nav_layout = QVBoxLayout(nav_container)
         nav_layout.setContentsMargins(0, 0, 0, 0)
         nav_layout.setSpacing(0)  # 按钮之间无间距
@@ -154,7 +211,11 @@ class NavigationSidebar(QWidget):
         # 底部容器，确保白色背景延伸
         bottom_container = QWidget()
         bottom_container.setObjectName("bottom_container")
-        bottom_container.setStyleSheet(f"background-color: {colors['nav_bg']};")
+        # 根据主题设置底部容器样式
+        if theme_manager.current_theme == "dark":
+            bottom_container.setStyleSheet(f"background-color: {colors['nav_bg']}; border: none;")
+        else:
+            bottom_container.setStyleSheet(f"background-color: {colors['nav_bg']}; border: none;")
         bottom_layout = QVBoxLayout(bottom_container)
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.setSpacing(5)
@@ -165,24 +226,46 @@ class NavigationSidebar(QWidget):
 
         self.theme_switcher = QPushButton(btn_text)
         self.theme_switcher.setFixedHeight(30)
-        self.theme_switcher.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {colors['accent_color']};
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 5px;
-                font-size: 12px;
-                text-align: center;
-                border: none;
-            }}
-            QPushButton:hover {{
-                background-color: {self._lighten_color(colors['accent_color'])};
-            }}
-            QPushButton:pressed {{
-                background-color: {self._darken_color(colors['accent_color'])};
-            }}
-        """)
+
+        # 根据当前主题设置不同的按钮样式
+        if current_theme == "dark":
+            # 深色主题下使用更明显的对比色
+            self.theme_switcher.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {colors['accent_color']};
+                    color: #ffffff; /* 确保文本在深色主题下清晰可见 */
+                    border: none;
+                    border-radius: 8px;
+                    padding: 5px;
+                    font-size: 12px;
+                    text-align: center;
+                }}
+                QPushButton:hover {{
+                    background-color: {self._lighten_color(colors['accent_color'], 0.15)}; /* 增加亮度因子 */
+                }}
+                QPushButton:pressed {{
+                    background-color: {self._lighten_color(colors['accent_color'], 0.05)};
+                }}
+            """)
+        else:
+            # 浅色主题下的样式
+            self.theme_switcher.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {colors['accent_color']};
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 5px;
+                    font-size: 12px;
+                    text-align: center;
+                }}
+                QPushButton:hover {{
+                    background-color: {self._lighten_color(colors['accent_color'])};
+                }}
+                QPushButton:pressed {{
+                    background-color: {self._darken_color(colors['accent_color'])};
+                }}
+            """)
         self.theme_switcher.clicked.connect(self._on_theme_switch)
         bottom_layout.addWidget(self.theme_switcher)
 
